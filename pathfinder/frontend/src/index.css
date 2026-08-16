@@ -30,8 +30,10 @@
   --error: #ef4444;
   --info: #3b82f6;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.15);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.25);
+  --border-highlight: rgba(255, 255, 255, 0.4);
+  --border-gradient: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.02) 100%);
 
   /* Sizing */
   --sidebar-width: 260px;
@@ -41,11 +43,14 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  /* 3D Shadows & Depth */
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-3d: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 12px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.2);
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3), inset 0 -1px 4px rgba(255, 255, 255, 0.1);
+  --shadow-pressed: inset 0 4px 8px 0 rgba(0, 0, 0, 0.5), inset 0 -1px 2px rgba(255, 255, 255, 0.05);
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -295,17 +300,49 @@ a:hover {
 
 /* ---- Glass Card ---- */
 .glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  position: relative;
   transition: all var(--transition-base);
+  overflow: hidden;
+}
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--border-gradient);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 .glass-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-3d), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.premium-3d-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    10px 10px 20px rgba(0, 0, 0, 0.6),
+    -5px -5px 15px rgba(255, 255, 255, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.premium-3d-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    15px 15px 30px rgba(0, 0, 0, 0.7),
+    -8px -8px 20px rgba(255, 255, 255, 0.08),
+    var(--shadow-glow),
+    inset 0 2px 2px rgba(255, 255, 255, 0.3);
 }
 
 /* ---- Buttons ---- */
@@ -316,34 +353,49 @@ a:hover {
   gap: 8px;
   padding: 10px 20px;
   border-radius: var(--radius-md);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
   font-weight: 600;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
-  white-space: nowrap;
+  outline: none;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+.btn:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 .btn-primary {
   background: var(--accent-gradient);
   color: white;
-  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .btn-primary:hover {
-  background: var(--accent-gradient-hover);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+.btn-primary:active {
+  box-shadow: var(--shadow-pressed), 0 2px 5px rgba(99, 102, 241, 0.4);
 }
 
 .btn-secondary {
-  background: var(--bg-glass);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 .btn-secondary:hover {
-  background: var(--bg-glass-hover);
-  border-color: var(--border-hover);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+.btn-secondary:active {
+  box-shadow: var(--shadow-pressed);
 }
 
 .btn-ghost {
@@ -520,6 +572,31 @@ select.input {
 }
 
 /* ---- Animations ---- */
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes float-intense {
+  0% { transform: translateY(0px) rotate(0deg) scale(1); }
+  50% { transform: translateY(-25px) rotate(3deg) scale(1.05); }
+  100% { transform: translateY(0px) rotate(0deg) scale(1); }
+}
+
+.float-anim {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-intense-anim {
+  animation: float-intense 8s ease-in-out infinite;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

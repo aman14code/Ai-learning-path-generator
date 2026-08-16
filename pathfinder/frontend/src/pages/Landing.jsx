@@ -38,7 +38,7 @@ export default function Landing() {
     <div className="landing">
       <div className="bg-mesh" />
 
-      {/* Hero */}
+      {/* Header */}
       <header className="landing-header">
         <div className="landing-logo">
           <div className="sidebar-logo-icon">PF</div>
@@ -46,33 +46,40 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="hero">
-        <div className="hero-badge">AI-Powered Learning Platform</div>
-        <h1 className="hero-title">
-          Find Your Perfect <br />
-          <span className="gradient-text">Learning Path</span>
-        </h1>
-        <p className="hero-subtitle">
-          Tell us your career goals and we'll create a personalized learning roadmap
-          powered by AI analysis of 110,000+ course reviews across 80 courses.
-        </p>
-        <div className="hero-actions">
-          <button className="btn btn-primary btn-lg" onClick={() => navigate('/onboarding')}>
-            Get Started Free
-          </button>
-          <button className="btn btn-secondary btn-lg" onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
-            Learn More
-          </button>
+      {/* Hero 3D Split Layout */}
+      <section className="hero-3d-split">
+        <div className="hero-content">
+          <div className="hero-badge">AI-Powered Learning Platform</div>
+          <h1 className="hero-title">
+            Find Your Perfect <br />
+            <span className="gradient-text">Learning Path</span>
+          </h1>
+          <p className="hero-subtitle">
+            Tell us your career goals and we'll create a personalized learning roadmap
+            powered by AI analysis of 110,000+ course reviews across 80 courses.
+          </p>
+          <div className="hero-actions">
+            <button className="btn btn-primary btn-lg" onClick={() => navigate('/onboarding')}>
+              Get Started Free
+            </button>
+            <button className="btn btn-secondary btn-lg" onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
+              Learn More
+            </button>
+          </div>
+          
+          <div className="hero-stats">
+            {STATS.map((s) => (
+              <div key={s.label} className="hero-stat">
+                <div className="hero-stat-value">{s.value}</div>
+                <div className="hero-stat-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* Stats */}
-        <div className="hero-stats">
-          {STATS.map((s) => (
-            <div key={s.label} className="hero-stat">
-              <div className="hero-stat-value">{s.value}</div>
-              <div className="hero-stat-label">{s.label}</div>
-            </div>
-          ))}
+        
+        <div className="hero-image-container">
+          <div className="hero-glow-orb"></div>
+          <img src="/hero.jpg" alt="3D Crystal AI Core" className="hero-3d-image float-intense-anim" />
         </div>
       </section>
 
@@ -82,7 +89,7 @@ export default function Landing() {
         <p className="section-subtitle">Everything you need to accelerate your learning journey</p>
         <div className="features-grid stagger">
           {FEATURES.map((f) => (
-            <div key={f.title} className="feature-card glass-card">
+            <div key={f.title} className="feature-card premium-3d-card">
               <div className="feature-icon">{f.icon}</div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
@@ -93,7 +100,7 @@ export default function Landing() {
 
       {/* CTA */}
       <section className="cta-section">
-        <div className="cta-card glass-card">
+        <div className="cta-card premium-3d-card float-anim">
           <h2>Ready to start your journey?</h2>
           <p>Create your learner profile in 60 seconds and get personalized recommendations.</p>
           <button className="btn btn-primary btn-lg" onClick={() => navigate('/onboarding')}>

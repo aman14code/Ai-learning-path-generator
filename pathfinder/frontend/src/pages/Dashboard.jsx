@@ -98,7 +98,7 @@ export default function Dashboard({ user }) {
           {loading ? (
             <div className="cards-grid stagger">
               {[1, 2, 3].map(i => (
-                <div key={i} className="glass-card" style={{ height: 160 }}>
+                <div key={i} className="premium-3d-card" style={{ height: 160, padding: 20 }}>
                   <div className="skeleton" style={{ height: 20, width: '60%', marginBottom: 12 }} />
                   <div className="skeleton" style={{ height: 14, width: '40%', marginBottom: 20 }} />
                   <div className="skeleton" style={{ height: 14, width: '80%' }} />
@@ -108,7 +108,7 @@ export default function Dashboard({ user }) {
           ) : (
             <div className="cards-grid stagger">
               {recommendations.map((rec, i) => (
-                <div key={i} className="course-rec-card glass-card">
+                <div key={i} className="course-rec-card premium-3d-card">
                   <div className="rec-header">
                     <h4>{rec.course}</h4>
                     <span className={`badge badge-${rec.difficulty?.toLowerCase()}`}>
@@ -137,21 +137,21 @@ export default function Dashboard({ user }) {
         <div className="dashboard-section">
           <h3 style={{ marginBottom: 16 }}>Quick Actions</h3>
           <div className="quick-actions stagger">
-            <button className="action-card glass-card" onClick={() => navigate('/learning-path')}>
+            <button className="action-card premium-3d-card" onClick={() => navigate('/learning-path')}>
               <span className="action-icon">&#128736;</span>
               <div>
                 <h4>Generate Learning Path</h4>
                 <p>Create a structured roadmap for your goals</p>
               </div>
             </button>
-            <button className="action-card glass-card" onClick={() => navigate('/chat')}>
+            <button className="action-card premium-3d-card" onClick={() => navigate('/chat')}>
               <span className="action-icon">&#128172;</span>
               <div>
                 <h4>Ask AI Assistant</h4>
                 <p>Get personalized advice and recommendations</p>
               </div>
             </button>
-            <button className="action-card glass-card" onClick={() => navigate('/courses')}>
+            <button className="action-card premium-3d-card" onClick={() => navigate('/courses')}>
               <span className="action-icon">&#128218;</span>
               <div>
                 <h4>Browse Courses</h4>

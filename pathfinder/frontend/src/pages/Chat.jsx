@@ -84,7 +84,14 @@ export default function Chat({ user }) {
         <p>Ask me anything about courses, career paths, or learning strategies.</p>
       </div>
 
-      <div className="chat-container glass-card">
+      <div className="chat-container premium-3d-card">
+        <div className="chat-header-3d">
+          <img src="/ai_core.jpg" alt="AI Core" className="ai-core-avatar float-anim" />
+          <div className="chat-header-info">
+            <h3>Neural Core Assistant</h3>
+            <span className="online-status">● Online</span>
+          </div>
+        </div>
         <div className="chat-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`chat-message ${msg.role}`} style={{ animationDelay: `${i * 0.05}s` }}>

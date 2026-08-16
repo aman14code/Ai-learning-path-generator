@@ -84,7 +84,7 @@ export default function Courses({ user }) {
       {loading ? (
         <div className="courses-grid">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="glass-card" style={{ height: 180 }}>
+            <div key={i} className="premium-3d-card" style={{ height: 180, padding: 20 }}>
               <div className="skeleton" style={{ height: 18, width: '70%', marginBottom: 10 }} />
               <div className="skeleton" style={{ height: 14, width: '40%', marginBottom: 16 }} />
               <div className="skeleton" style={{ height: 12, width: '90%', marginBottom: 6 }} />
@@ -97,7 +97,7 @@ export default function Courses({ user }) {
           {filtered.map(course => (
             <div
               key={course.name}
-              className={`course-card glass-card ${completedSet.has(course.name) ? 'completed' : ''}`}
+              className={`course-card premium-3d-card ${completedSet.has(course.name) ? 'completed' : ''}`}
               onClick={() => setSelectedCourse(selectedCourse?.name === course.name ? null : course)}
             >
               <div className="course-card-header">

@@ -92,12 +92,8 @@
   padding: 16px 20px;
   cursor: pointer;
   text-align: left;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  transition: all var(--transition-fast);
   width: 100%;
 }
 .action-card:hover {
