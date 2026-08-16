@@ -1,0 +1,230 @@
+/* Learning Path Styles */
+
+.path-generator {
+  margin-bottom: 24px;
+}
+.path-generator h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.path-generator > p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.career-path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.career-path-card {
+  text-align: left;
+  padding: 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+.career-path-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.career-path-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.career-path-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.career-course-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-tertiary);
+}
+
+/* Path Result */
+.path-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.path-header-info {
+  flex: 1;
+}
+.path-header-info h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.path-header-info p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.path-stats {
+  display: flex;
+  gap: 24px;
+}
+.path-stat {
+  text-align: center;
+}
+.path-stat strong {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+.path-stat span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Milestones */
+.milestones {
+  position: relative;
+  padding-left: 32px;
+}
+.milestones::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-primary), var(--accent-tertiary));
+  opacity: 0.3;
+}
+
+.milestone {
+  margin-bottom: 32px;
+}
+
+.milestone-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.milestone-badge {
+  width: 32px;
+  height: 32px;
+  background: var(--accent-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: -40px;
+  box-shadow: var(--shadow-glow);
+}
+
+.milestone-number {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: white;
+}
+
+.milestone-header h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.milestone-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.milestone-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Path Course Card */
+.path-course-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+.path-course-card.completed {
+  opacity: 0.6;
+}
+
+.path-course-status {
+  flex-shrink: 0;
+}
+
+.status-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.status-check {
+  width: 20px;
+  height: 20px;
+  background: var(--success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: white;
+  font-weight: 800;
+}
+
+.path-course-info {
+  flex: 1;
+  min-width: 0;
+}
+.path-course-info h5 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.path-course-info > p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.path-course-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.path-duration {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.path-course-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .path-header { flex-direction: column; align-items: flex-start; }
+  .career-path-grid { grid-template-columns: 1fr 1fr; }
+  .milestones { padding-left: 24px; }
+  .milestone-badge { left: -32px; width: 24px; height: 24px; }
+}
