@@ -1,0 +1,154 @@
+/* Dashboard Styles */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+
+.dashboard-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+/* Course Cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.course-rec-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rec-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rec-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.rec-domain {
+  font-size: 0.75rem;
+  color: var(--accent-tertiary);
+  font-weight: 600;
+}
+
+.rec-explanation {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.rec-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rec-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.rec-score {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  white-space: nowrap;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+.action-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.action-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.action-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.action-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Skill Bars */
+.skill-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skill-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skill-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.skill-bar-label .text-muted {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
