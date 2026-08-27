@@ -138,6 +138,14 @@ class RecommendationEngine:
         self.course_metadata = {}
         self.keyword_map = {}
         self._loaded = False
+        
+        # Ultimate Model Fields
+        self.vec_word = None
+        self.vec_char = None
+        self.clfA = None
+        self.clfB = None
+        self.clfC = None
+        self.ultimate_classes = None
 
     def load(self, train_path=None):
         """Load training data and build course profiles."""
@@ -165,6 +173,21 @@ class RecommendationEngine:
 
         self.course_names = sorted(df["Course"].unique().tolist())
         self.courses = self.course_names
+        
+        # Check for ultimate model
+        ultimate_path = os.path.join(DATA_DIR, "ultimate_model.pkl")
+        if os.path.exists(ultimate_path):
+            print("[ML Engine] Loading Ultimate Ensemble model...")
+            with open(ultimate_path, "rb") as f:
+                model_data = pickle.load(f)
+                self.vec_word = model_data["vec_word"]
+                self.vec_char = model_data["vec_char"]
+                self.clfA = model_data["clfA"]
+                self.clfB = model_data["clfB"]
+                self.clfC = model_data["clfC"]
+                self.ultimate_classes = model_data["classes"]
+        else:
+            print("[ML Engine] Ultimate model not found. Run train_and_save_model.py first!")
 
         # Build TF-IDF vectorizer on all reviews
         print("[ML Engine] Building TF-IDF vectorizer...")
@@ -220,12 +243,31 @@ class RecommendationEngine:
         if not cleaned:
             return []
 
-        # Vectorize user input
+        # Vectorize user input for fallback
         user_vec = self.vectorizer.transform([cleaned])
         user_vec_norm = normalize(user_vec).toarray().flatten()
 
         # Compute similarity with all course profiles
         similarities = self.course_vectors @ user_vec_norm
+        
+        # If ULTIMATE model is loaded, completely override the TF-IDF similarities with ensemble probabilities!
+        if self.clfA is not None:
+            from scipy.sparse import hstack
+            xw = self.vec_word.transform([cleaned])
+            xc = self.vec_char.transform([cleaned])
+            x_combo = hstack([xw, xc])
+            
+            pA = self.clfA.predict_proba(xw)
+            pB = self.clfB.predict_proba(xc)
+            pC = self.clfC.predict_proba(x_combo)
+            
+            # 3-Model Ensemble (matching recommender_ULTIMATE.py)
+            ensemble_probs = (3.0*pA + 2.5*pB + 2.0*pC) / 7.5
+            probs = ensemble_probs[0]
+            
+            prob_dict = {cls: prob for cls, prob in zip(self.ultimate_classes, probs)}
+            for i, course in enumerate(self.course_names):
+                similarities[i] = prob_dict.get(course, 0.0)
 
         # Rank courses
         ranked_indices = np.argsort(-similarities)
