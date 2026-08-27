@@ -2,6 +2,7 @@
 PathFinder ML Recommendation Engine
 Uses TF-IDF + course profiles for fast inference.
 No heavy classifier training at startup - pre-computes course embeddings instead.
+Includes Skill Gap Analysis and Adaptive Learning capabilities.
 """
 import pandas as pd
 import numpy as np
@@ -25,8 +26,108 @@ def clean_text(text):
     return re.sub(r"\s+", " ", text).strip()
 
 
+# ============================================================================
+# SKILL TAXONOMY — Maps domains to granular skills with proficiency weights
+# This is the backbone of the Skill Gap Analysis engine
+# ============================================================================
+SKILL_TAXONOMY = {
+    "Python": {
+        "skills": ["variables", "loops", "functions", "data types", "file handling",
+                   "error handling", "modules", "libraries", "classes", "inheritance",
+                   "decorators", "generators", "context managers", "metaclasses",
+                   "automation", "web scraping", "numpy", "pandas", "matplotlib", "jupyter"],
+        "weight": 1.0,
+    },
+    "Web Development": {
+        "skills": ["html", "css", "javascript", "dom", "events", "responsive design",
+                   "react", "angular", "vue", "node.js", "express", "api design",
+                   "rest", "graphql", "typescript", "full stack", "authentication"],
+        "weight": 1.0,
+    },
+    "Data Science": {
+        "skills": ["data analysis", "pandas", "visualization", "matplotlib", "statistics",
+                   "probability", "distributions", "hypothesis testing", "regression",
+                   "excel", "tableau", "power bi", "exploratory analysis", "data cleaning",
+                   "time series", "forecasting", "r programming"],
+        "weight": 1.0,
+    },
+    "Machine Learning": {
+        "skills": ["supervised learning", "unsupervised learning", "classification",
+                   "regression", "decision trees", "random forest", "svm", "clustering",
+                   "dimensionality reduction", "feature engineering", "cross validation",
+                   "neural networks", "deep learning", "tensorflow", "pytorch", "cnn",
+                   "nlp", "computer vision", "transformers", "generative ai", "mlops",
+                   "reinforcement learning", "transfer learning"],
+        "weight": 1.2,
+    },
+    "Database": {
+        "skills": ["sql", "joins", "aggregation", "indexing", "query optimization",
+                   "schema design", "normalization", "postgresql", "mongodb", "redis",
+                   "caching", "data warehouse", "etl"],
+        "weight": 0.9,
+    },
+    "Cloud & DevOps": {
+        "skills": ["linux", "bash", "git", "docker", "kubernetes", "ci/cd",
+                   "aws", "azure", "gcp", "monitoring", "infrastructure as code",
+                   "deployment", "containerization"],
+        "weight": 0.9,
+    },
+    "Mobile Development": {
+        "skills": ["react native", "flutter", "android", "ios", "swift",
+                   "mobile ui", "navigation", "state management"],
+        "weight": 0.8,
+    },
+    "Security": {
+        "skills": ["network security", "encryption", "firewalls", "penetration testing",
+                   "vulnerability scanning", "ethical hacking", "risk assessment"],
+        "weight": 0.8,
+    },
+    "Mathematics": {
+        "skills": ["linear algebra", "vectors", "matrices", "calculus", "derivatives",
+                   "gradients", "optimization", "probability theory"],
+        "weight": 0.7,
+    },
+}
+
+# Maps career roles to required skill domains with target proficiency (0-100)
+ROLE_SKILL_REQUIREMENTS = {
+    "Data Scientist": {
+        "Python": 85, "Data Science": 95, "Machine Learning": 80,
+        "Mathematics": 70, "Database": 60,
+    },
+    "Full Stack Web Developer": {
+        "Web Development": 95, "Database": 75, "Cloud & DevOps": 60,
+        "Python": 40,
+    },
+    "Machine Learning Engineer": {
+        "Python": 90, "Machine Learning": 95, "Mathematics": 80,
+        "Cloud & DevOps": 65, "Data Science": 60,
+    },
+    "DevOps Engineer": {
+        "Cloud & DevOps": 95, "Python": 60, "Database": 55,
+        "Security": 50,
+    },
+    "Mobile App Developer": {
+        "Mobile Development": 90, "Web Development": 70, "Database": 50,
+        "Cloud & DevOps": 40,
+    },
+    "Data Engineer": {
+        "Database": 90, "Python": 80, "Cloud & DevOps": 70,
+        "Data Science": 60,
+    },
+    "AI/GenAI Specialist": {
+        "Machine Learning": 95, "Python": 85, "Mathematics": 75,
+        "Data Science": 65, "Cloud & DevOps": 50,
+    },
+    "Cybersecurity Analyst": {
+        "Security": 90, "Cloud & DevOps": 70, "Python": 55,
+        "Database": 45,
+    },
+}
+
+
 class RecommendationEngine:
-    """AI-powered course recommendation engine."""
+    """AI-powered course recommendation engine with skill gap analysis."""
 
     def __init__(self):
         self.courses = []
@@ -196,7 +297,198 @@ class RecommendationEngine:
         """Get all available courses with metadata."""
         return [self.course_metadata[c] for c in self.course_names]
 
-    def answer_question(self, question, context=None):
+    # ========================================================================
+    # SKILL GAP ANALYSIS — The core differentiator
+    # ========================================================================
+
+    def analyze_skill_gaps(self, completed_courses, target_role, course_graph=None):
+        """
+        Analyze skill gaps between a learner's current competencies and a target role.
+
+        Returns:
+            dict with:
+            - current_skills: {domain: proficiency%} — what the user knows
+            - required_skills: {domain: proficiency%} — what the role needs
+            - skill_gaps: {domain: gap_score} — where the user falls short
+            - gap_courses: [{course, domain, gap_it_fills, priority}] — courses to close gaps
+            - overall_readiness: float 0-100 — how ready the user is for the role
+            - strengths: list — domains where user exceeds requirements
+            - weaknesses: list — domains with largest gaps
+        """
+        if course_graph is None:
+            from learning_paths import COURSE_GRAPH
+            course_graph = COURSE_GRAPH
+
+        # 1. Calculate current skill proficiency per domain
+        current_skills = {}
+        completed_set = set(completed_courses or [])
+
+        for domain in SKILL_TAXONOMY:
+            domain_courses = [
+                name for name, info in course_graph.items()
+                if info.get("domain", "") == domain
+            ]
+            if not domain_courses:
+                current_skills[domain] = 0
+                continue
+
+            completed_in_domain = [c for c in domain_courses if c in completed_set]
+            # Proficiency = weighted by difficulty (advanced courses count more)
+            total_weight = 0
+            earned_weight = 0
+            for c in domain_courses:
+                diff = course_graph.get(c, {}).get("difficulty", 2)
+                weight = diff * 1.5  # Advanced courses contribute more
+                total_weight += weight
+                if c in completed_set:
+                    earned_weight += weight
+
+            proficiency = (earned_weight / total_weight * 100) if total_weight > 0 else 0
+            current_skills[domain] = round(min(100, proficiency), 1)
+
+        # 2. Get required skills for the target role
+        required_skills = ROLE_SKILL_REQUIREMENTS.get(target_role, {})
+        if not required_skills:
+            # Try fuzzy matching
+            target_lower = target_role.lower()
+            for role, reqs in ROLE_SKILL_REQUIREMENTS.items():
+                if any(word in role.lower() for word in target_lower.split()):
+                    required_skills = reqs
+                    target_role = role
+                    break
+
+        if not required_skills:
+            # Default: balanced requirements
+            required_skills = {d: 50 for d in SKILL_TAXONOMY}
+
+        # 3. Calculate skill gaps
+        skill_gaps = {}
+        for domain, required in required_skills.items():
+            current = current_skills.get(domain, 0)
+            gap = max(0, required - current)
+            skill_gaps[domain] = round(gap, 1)
+
+        # 4. Find courses to close gaps, prioritized by gap size
+        gap_courses = []
+        for domain, gap in sorted(skill_gaps.items(), key=lambda x: -x[1]):
+            if gap <= 0:
+                continue
+            # Find uncompleted courses in this domain
+            domain_courses = [
+                (name, info) for name, info in course_graph.items()
+                if info.get("domain", "") == domain and name not in completed_set
+            ]
+            # Sort by difficulty (teach fundamentals first)
+            domain_courses.sort(key=lambda x: x[1].get("difficulty", 2))
+
+            for name, info in domain_courses[:3]:  # Top 3 per gap domain
+                gap_courses.append({
+                    "course": name,
+                    "domain": domain,
+                    "difficulty": {1: "Beginner", 2: "Intermediate", 3: "Advanced"}.get(
+                        info.get("difficulty", 2), "Intermediate"
+                    ),
+                    "gap_it_fills": round(gap, 1),
+                    "priority": "high" if gap > 50 else "medium" if gap > 25 else "low",
+                    "skills": info.get("skills", [])[:4],
+                    "hours": info.get("duration_hours", 20),
+                })
+
+        # 5. Calculate overall readiness
+        total_required = sum(required_skills.values())
+        total_current = sum(min(current_skills.get(d, 0), r) for d, r in required_skills.items())
+        overall_readiness = (total_current / total_required * 100) if total_required > 0 else 0
+
+        # 6. Identify strengths and weaknesses
+        strengths = [d for d in required_skills if current_skills.get(d, 0) >= required_skills[d]]
+        weaknesses = sorted(
+            [(d, skill_gaps[d]) for d in skill_gaps if skill_gaps[d] > 10],
+            key=lambda x: -x[1]
+        )
+
+        return {
+            "target_role": target_role,
+            "current_skills": current_skills,
+            "required_skills": required_skills,
+            "skill_gaps": skill_gaps,
+            "gap_courses": gap_courses[:10],
+            "overall_readiness": round(overall_readiness, 1),
+            "strengths": strengths,
+            "weaknesses": [{"domain": d, "gap": g} for d, g in weaknesses[:5]],
+            "total_domains_analyzed": len(required_skills),
+        }
+
+    def get_learning_velocity(self, progress_data, analytics_data):
+        """
+        Calculate learning velocity metrics for adaptive pacing.
+
+        Returns metrics like:
+        - courses_per_week: average completion rate
+        - current_streak: consecutive days with activity
+        - estimated_completion: weeks to finish current path
+        - pace_label: "fast" | "steady" | "slow"
+        """
+        if not progress_data:
+            return {
+                "courses_per_week": 0,
+                "current_streak": 0,
+                "estimated_completion": 0,
+                "pace_label": "getting_started",
+                "total_active_days": 0,
+            }
+
+        # Calculate completion rate
+        completed = [p for p in progress_data if p.get("status") == "completed"]
+        if not completed:
+            return {
+                "courses_per_week": 0,
+                "current_streak": 0,
+                "estimated_completion": 0,
+                "pace_label": "getting_started",
+                "total_active_days": len(analytics_data),
+            }
+
+        # Parse dates
+        from datetime import datetime, timedelta
+        dates_active = set()
+        for a in analytics_data:
+            dates_active.add(a.get("date", ""))
+
+        # Streak calculation
+        today = datetime.now().strftime("%Y-%m-%d")
+        streak = 0
+        d = datetime.now()
+        for _ in range(365):
+            if d.strftime("%Y-%m-%d") in dates_active:
+                streak += 1
+                d -= timedelta(days=1)
+            else:
+                break
+
+        # Pace
+        total_weeks = max(1, len(dates_active) / 7)
+        courses_per_week = len(completed) / total_weeks
+
+        if courses_per_week >= 3:
+            pace = "fast"
+        elif courses_per_week >= 1:
+            pace = "steady"
+        else:
+            pace = "slow"
+
+        return {
+            "courses_per_week": round(courses_per_week, 1),
+            "current_streak": streak,
+            "estimated_completion": 0,  # Calculated by frontend based on remaining courses
+            "pace_label": pace,
+            "total_active_days": len(dates_active),
+        }
+
+    # ========================================================================
+    # CHAT / Q&A
+    # ========================================================================
+
+    def answer_question(self, question, user_context=None):
         """Answer a learner's question using the knowledge base."""
         cleaned = clean_text(question)
 
@@ -209,18 +501,48 @@ class RecommendationEngine:
         if mentioned_courses:
             course = mentioned_courses[0]
             info = self.course_metadata[course]
+            response_text = (
+                f"**{course}** is a {info['difficulty'].lower()}-level course "
+                f"in the {info['domain']} domain. It covers topics like "
+                f"{', '.join(info['keywords'][:5])}. "
+                f"Based on {info['num_reviews']} learner reviews, it's a "
+                f"well-structured course for building practical skills."
+            )
+            # Add personalized context
+            if user_context and user_context.get("goals"):
+                response_text += (
+                    f"\n\nBased on your goal of becoming a **{user_context['goals']}**, "
+                    f"this course {'is highly relevant' if info['domain'] in (user_context.get('interests') or []) else 'can complement your learning'}."
+                )
             return {
                 "type": "course_info",
                 "course": course,
-                "response": (
-                    f"**{course}** is a {info['difficulty'].lower()}-level course "
-                    f"in the {info['domain']} domain. It covers topics like "
-                    f"{', '.join(info['keywords'][:5])}. "
-                    f"Based on {info['num_reviews']} learner reviews, it's a "
-                    f"well-structured course for building practical skills."
-                ),
+                "response": response_text,
                 "keywords": info["keywords"],
             }
+
+        # Skill gap questions
+        gap_keywords = ["skill gap", "what am i missing", "what do i need",
+                       "am i ready", "readiness", "gaps", "how far"]
+        is_gap = any(kw in cleaned for kw in gap_keywords)
+
+        if is_gap and user_context:
+            completed = user_context.get("completed_courses", [])
+            goal = user_context.get("goals", "")
+            if goal and completed:
+                gap_analysis = self.analyze_skill_gaps(completed, goal)
+                weakness_text = ", ".join([w["domain"] for w in gap_analysis["weaknesses"][:3]])
+                return {
+                    "type": "skill_gap",
+                    "response": (
+                        f"Based on your progress, you're **{gap_analysis['overall_readiness']:.0f}% ready** "
+                        f"for a {gap_analysis['target_role']} role. "
+                        f"Your biggest skill gaps are in: **{weakness_text}**. "
+                        f"I recommend focusing on these areas next. Would you like me to "
+                        f"generate a targeted learning path to close these gaps?"
+                    ),
+                    "gap_analysis": gap_analysis,
+                }
 
         # Goal/career questions
         goal_keywords = ["become", "learn", "career", "job", "path", "roadmap",
@@ -229,16 +551,17 @@ class RecommendationEngine:
 
         if is_goal:
             recs = self.recommend_courses(question, top_k=5)
-            course_list = [r["course"] for r in recs]
-            return {
-                "type": "recommendation",
-                "response": (
-                    f"Based on your interest, I'd recommend starting with these courses: "
-                    f"**{course_list[0]}**, **{course_list[1]}**, and **{course_list[2]}**. "
-                    f"These courses align well with your goals and will build a strong foundation."
-                ),
-                "recommendations": recs,
-            }
+            if recs:
+                course_list = [r["course"] for r in recs]
+                return {
+                    "type": "recommendation",
+                    "response": (
+                        f"Based on your interest, I'd recommend starting with these courses: "
+                        f"**{course_list[0]}**, **{course_list[1]}**, and **{course_list[2]}**. "
+                        f"These courses align well with your goals and will build a strong foundation."
+                    ),
+                    "recommendations": recs,
+                }
 
         # Comparison questions
         compare_keywords = ["compare", "difference", "vs", "versus", "better",
@@ -247,15 +570,33 @@ class RecommendationEngine:
 
         if is_compare:
             recs = self.recommend_courses(question, top_k=3)
+            if len(recs) >= 2:
+                return {
+                    "type": "comparison",
+                    "response": (
+                        f"Great question! Here's a quick comparison of relevant courses. "
+                        f"**{recs[0]['course']}** focuses on {', '.join(recs[0]['keywords'][:3])}, "
+                        f"while **{recs[1]['course']}** covers {', '.join(recs[1]['keywords'][:3])}. "
+                        f"Your choice depends on your specific goals and current skill level."
+                    ),
+                    "recommendations": recs,
+                }
+
+        # Progress/motivation questions
+        progress_keywords = ["how am i doing", "progress", "doing well", "on track",
+                           "motivation", "stuck", "struggling"]
+        is_progress = any(kw in cleaned for kw in progress_keywords)
+
+        if is_progress and user_context:
+            completed = len(user_context.get("completed_courses", []))
             return {
-                "type": "comparison",
+                "type": "motivation",
                 "response": (
-                    f"Great question! Here's a quick comparison of relevant courses. "
-                    f"**{recs[0]['course']}** focuses on {', '.join(recs[0]['keywords'][:3])}, "
-                    f"while **{recs[1]['course']}** covers {', '.join(recs[1]['keywords'][:3])}. "
-                    f"Your choice depends on your specific goals and current skill level."
+                    f"You've completed **{completed} courses** so far — great progress! 🎉 "
+                    f"Every course you finish brings you closer to your goal. "
+                    f"The most successful learners maintain consistency over speed. "
+                    f"Would you like me to suggest what to focus on next?"
                 ),
-                "recommendations": recs,
             }
 
         # Default: recommend based on the question

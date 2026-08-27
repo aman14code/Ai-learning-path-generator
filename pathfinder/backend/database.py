@@ -58,6 +58,29 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
+
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            course_name TEXT NOT NULL,
+            difficulty_rating INTEGER DEFAULT 0,
+            relevance_rating INTEGER DEFAULT 0,
+            comment TEXT DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            UNIQUE(user_id, course_name)
+        );
+
+        CREATE TABLE IF NOT EXISTS learning_analytics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            courses_completed INTEGER DEFAULT 0,
+            hours_spent REAL DEFAULT 0,
+            courses_started INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            UNIQUE(user_id, date)
+        );
     """)
     conn.commit()
     conn.close()
@@ -139,6 +162,28 @@ def update_progress(user_id, course_name, status, progress_percent=0):
                 completed.append(course_name)
                 update_user(user_id, completed_courses=completed)
 
+    # Track analytics
+    today = datetime.now().strftime("%Y-%m-%d")
+    if status == "completed":
+        _track_analytics(user_id, today, courses_completed=1)
+    elif status == "in_progress":
+        _track_analytics(user_id, today, courses_started=1)
+
+    conn.close()
+
+
+def _track_analytics(user_id, date, courses_completed=0, hours_spent=0, courses_started=0):
+    """Track daily learning analytics."""
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO learning_analytics (user_id, date, courses_completed, hours_spent, courses_started)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, date) DO UPDATE SET
+            courses_completed = learning_analytics.courses_completed + excluded.courses_completed,
+            hours_spent = learning_analytics.hours_spent + excluded.hours_spent,
+            courses_started = learning_analytics.courses_started + excluded.courses_started
+    """, (user_id, date, courses_completed, hours_spent, courses_started))
+    conn.commit()
     conn.close()
 
 
@@ -170,6 +215,45 @@ def get_chat_history(user_id, limit=50):
         "SELECT * FROM chat_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
         (user_id, limit)
     ).fetchall()
+    conn.close()
+    return [dict(r) for r in reversed(rows)]
+
+
+def add_feedback(user_id, course_name, difficulty_rating=0, relevance_rating=0, comment=""):
+    """Add or update course feedback."""
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO feedback (user_id, course_name, difficulty_rating, relevance_rating, comment)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, course_name) DO UPDATE SET
+            difficulty_rating = excluded.difficulty_rating,
+            relevance_rating = excluded.relevance_rating,
+            comment = excluded.comment,
+            created_at = CURRENT_TIMESTAMP
+    """, (user_id, course_name, difficulty_rating, relevance_rating, comment))
+    conn.commit()
+    conn.close()
+
+
+def get_feedback(user_id):
+    """Get all feedback for a user."""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM feedback WHERE user_id = ? ORDER BY created_at DESC", (user_id,)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_learning_analytics(user_id, days=30):
+    """Get learning analytics for the last N days."""
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT * FROM learning_analytics
+        WHERE user_id = ?
+        ORDER BY date DESC
+        LIMIT ?
+    """, (user_id, days)).fetchall()
     conn.close()
     return [dict(r) for r in reversed(rows)]
 
