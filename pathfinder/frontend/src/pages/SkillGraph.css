@@ -1,0 +1,202 @@
+/* SkillGraph Styles */
+
+.graph-controls {
+  margin-bottom: 16px;
+}
+
+.domain-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.domain-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.domain-filter-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  background: var(--bg-glass-hover);
+}
+
+.domain-filter-btn.active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.domain-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.graph-stats-bar {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.completed-count {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Graph Container */
+.graph-container {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  min-height: 450px;
+}
+
+.force-graph-canvas {
+  display: block;
+  width: 100%;
+  cursor: default;
+}
+
+.graph-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 450px;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+/* Node Detail Panel */
+.node-detail {
+  margin-top: 16px;
+  padding: 20px 24px;
+}
+
+.node-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.node-detail-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.node-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.domain-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.node-duration {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.node-completed-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.node-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.node-skills {
+  margin-top: 8px;
+}
+
+.node-skills strong {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.node-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Legend */
+.graph-legend {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg-glass);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.legend-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.legend-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.legend-desc {
+  color: var(--text-muted);
+}
+
+.graph-legend .legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .domain-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  .graph-legend {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
