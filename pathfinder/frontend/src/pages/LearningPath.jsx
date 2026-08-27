@@ -8,6 +8,8 @@ export default function LearningPath({ user, setUser }) {
   const [loading, setLoading] = useState(false);
   const [goalInput, setGoalInput] = useState(user?.goals || '');
   const [showGenerator, setShowGenerator] = useState(true);
+  const [feedbackCourse, setFeedbackCourse] = useState(null);
+  const [feedbackData, setFeedbackData] = useState({ difficulty: 3, relevance: 4 });
 
   useEffect(() => {
     api.getCareerPaths()
@@ -48,16 +50,54 @@ export default function LearningPath({ user, setUser }) {
         progress_percent: status === 'completed' ? 100 : status === 'in_progress' ? 50 : 0,
       });
       // Update local state
-      if (status === 'completed' && setUser) {
-        const updated = { ...user, completed_courses: [...(user.completed_courses || []), courseName] };
-        setUser(updated);
+      if (status === 'completed') {
+        if (setUser) {
+          const updated = { ...user, completed_courses: [...(user.completed_courses || []), courseName] };
+          setUser(updated);
+        }
+        // Show feedback modal
+        setFeedbackCourse(courseName);
       }
     } catch (err) {
       console.error('Failed to update progress:', err);
     }
   }
 
+  async function submitFeedback() {
+    if (!user?.id || !feedbackCourse) return;
+    try {
+      await api.submitFeedback({
+        user_id: user.id,
+        course_name: feedbackCourse,
+        difficulty_rating: feedbackData.difficulty,
+        relevance_rating: feedbackData.relevance,
+      });
+    } catch (err) {
+      console.error('Failed to submit feedback:', err);
+    }
+    setFeedbackCourse(null);
+    setFeedbackData({ difficulty: 3, relevance: 4 });
+  }
+
   const completedSet = new Set(user?.completed_courses || []);
+
+  // Calculate timeline
+  let cumulativeHours = 0;
+  const timelineData = path?.courses?.map((c, i) => {
+    const isCompleted = completedSet.has(c.name);
+    const hours = c.duration_hours || 20;
+    cumulativeHours += hours;
+    return {
+      ...c,
+      isCompleted,
+      cumulativeHours,
+      weekNumber: Math.ceil(cumulativeHours / 10),
+    };
+  }) || [];
+
+  const totalWeeks = timelineData.length > 0 ? timelineData[timelineData.length - 1].weekNumber : 0;
+  const completedCount = timelineData.filter(c => c.isCompleted).length;
+  const progressPercent = timelineData.length > 0 ? (completedCount / timelineData.length * 100) : 0;
 
   return (
     <div className="learning-path-page animate-fade-in">
@@ -137,6 +177,44 @@ export default function LearningPath({ user, setUser }) {
             </button>
           </div>
 
+          {/* Overall Progress Bar */}
+          <div className="path-progress-bar glass-card">
+            <div className="path-progress-info">
+              <span className="path-progress-label">
+                Overall Progress: {completedCount}/{timelineData.length} courses
+              </span>
+              <span className="path-progress-percent">{progressPercent.toFixed(0)}%</span>
+            </div>
+            <div className="progress-bar" style={{ height: 8 }}>
+              <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
+
+          {/* Visual Timeline */}
+          <div className="path-timeline">
+            <div className="timeline-track">
+              {timelineData.map((course, i) => {
+                const widthPercent = 100 / timelineData.length;
+                return (
+                  <div
+                    key={course.name}
+                    className={`timeline-node ${course.isCompleted ? 'completed' : ''}`}
+                    style={{ width: `${widthPercent}%` }}
+                    title={`${course.name} — Week ${course.weekNumber}`}
+                  >
+                    <div className="timeline-dot" />
+                    {i < timelineData.length - 1 && <div className="timeline-line" />}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="timeline-labels">
+              <span>Start</span>
+              <span>Week {Math.ceil(totalWeeks / 2)}</span>
+              <span>Week {totalWeeks}</span>
+            </div>
+          </div>
+
           {/* Milestones */}
           <div className="milestones">
             {path.milestones?.map((milestone, mi) => (
@@ -158,7 +236,7 @@ export default function LearningPath({ user, setUser }) {
                       <div key={courseName} className={`path-course-card glass-card ${isCompleted ? 'completed' : ''}`}>
                         <div className="path-course-status">
                           {isCompleted ? (
-                            <div className="status-check">&#10003;</div>
+                            <div className="status-check">✓</div>
                           ) : (
                             <div className="status-circle" />
                           )}
@@ -181,9 +259,12 @@ export default function LearningPath({ user, setUser }) {
                                 Start
                               </button>
                               <button className="btn btn-sm btn-primary" onClick={() => markCourse(courseName, 'completed')}>
-                                Done
+                                Done ✓
                               </button>
                             </>
+                          )}
+                          {isCompleted && (
+                            <span className="completed-label">✓ Done</span>
                           )}
                         </div>
                       </div>
@@ -192,6 +273,56 @@ export default function LearningPath({ user, setUser }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {feedbackCourse && (
+        <div className="feedback-overlay" onClick={() => setFeedbackCourse(null)}>
+          <div className="feedback-modal glass-card animate-scale-in" onClick={e => e.stopPropagation()}>
+            <h3>Course Feedback 🎉</h3>
+            <p>You completed <strong>{feedbackCourse}</strong>! Help us adapt your path.</p>
+
+            <div className="feedback-field">
+              <label>Difficulty Level</label>
+              <div className="rating-stars">
+                {[1, 2, 3, 4, 5].map(v => (
+                  <button
+                    key={v}
+                    className={`star-btn ${feedbackData.difficulty >= v ? 'active' : ''}`}
+                    onClick={() => setFeedbackData({ ...feedbackData, difficulty: v })}
+                  >
+                    {v <= 2 ? '😊' : v === 3 ? '😐' : '🔥'}
+                  </button>
+                ))}
+              </div>
+              <div className="rating-labels">
+                <span>Too Easy</span>
+                <span>Just Right</span>
+                <span>Very Hard</span>
+              </div>
+            </div>
+
+            <div className="feedback-field">
+              <label>Relevance to Your Goal</label>
+              <div className="rating-stars">
+                {[1, 2, 3, 4, 5].map(v => (
+                  <button
+                    key={v}
+                    className={`star-btn ${feedbackData.relevance >= v ? 'active' : ''}`}
+                    onClick={() => setFeedbackData({ ...feedbackData, relevance: v })}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="feedback-actions">
+              <button className="btn btn-ghost" onClick={() => setFeedbackCourse(null)}>Skip</button>
+              <button className="btn btn-primary" onClick={submitFeedback}>Submit Feedback</button>
+            </div>
           </div>
         </div>
       )}

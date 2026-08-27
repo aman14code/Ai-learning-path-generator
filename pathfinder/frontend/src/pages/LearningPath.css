@@ -90,6 +90,88 @@
   color: var(--text-muted);
 }
 
+/* Overall Progress Bar */
+.path-progress-bar {
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.path-progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.path-progress-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.path-progress-percent {
+  font-size: 0.9rem;
+  font-weight: 800;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Visual Timeline */
+.path-timeline {
+  margin-bottom: 28px;
+  padding: 0 8px;
+}
+
+.timeline-track {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.timeline-node {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+  z-index: 1;
+}
+
+.timeline-node.completed .timeline-dot {
+  background: var(--success);
+  border-color: var(--success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+.timeline-line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 -1px;
+}
+
+.timeline-node.completed .timeline-line {
+  background: var(--success);
+}
+
+.timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
 /* Milestones */
 .milestones {
   position: relative;
@@ -220,6 +302,108 @@
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+}
+
+.completed-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+/* ---- Feedback Modal ---- */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.feedback-modal {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  text-align: center;
+}
+
+.feedback-modal h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.feedback-modal > p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+.feedback-modal strong {
+  color: var(--accent-primary);
+}
+
+.feedback-field {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.feedback-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.star-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.star-btn:hover {
+  border-color: var(--border-hover);
+  transform: scale(1.1);
+}
+
+.star-btn.active {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.15);
+  transform: scale(1.05);
+}
+
+.rating-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 0 8px;
+}
+
+.feedback-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
 }
 
 @media (max-width: 768px) {

@@ -1,5 +1,66 @@
 /* Courses Styles */
 
+/* Domain Category Cards */
+.domain-category-cards {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.domain-cat-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+
+.domain-cat-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.domain-cat-card.active {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+}
+
+.domain-cat-icon {
+  font-size: 1.2rem;
+}
+
+.domain-cat-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.domain-cat-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: var(--text-muted);
+}
+
+.domain-cat-completed {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--success);
+}
+
+/* Filters */
 .courses-filters {
   display: flex;
   gap: 12px;
@@ -118,7 +179,14 @@
   gap: 4px;
 }
 
+.course-actions-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 @media (max-width: 768px) {
   .courses-grid { grid-template-columns: 1fr; }
   .courses-filters { flex-direction: column; }
+  .domain-category-cards { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; }
 }

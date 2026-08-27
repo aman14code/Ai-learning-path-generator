@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react';
 import { api } from '../api';
 import './Courses.css';
 
+const DOMAIN_ICONS = {
+  'Python': '🐍',
+  'Web Development': '🌐',
+  'Data Science': '📊',
+  'Machine Learning': '🧠',
+  'Database': '🗄️',
+  'Cloud & DevOps': '☁️',
+  'Mobile Development': '📱',
+  'Security': '🛡️',
+  'Programming': '💻',
+  'Data Engineering': '⚙️',
+  'Mathematics': '📐',
+  'Emerging Tech': '🚀',
+};
+
 export default function Courses({ user }) {
   const [courses, setCourses] = useState([]);
   const [domains, setDomains] = useState([]);
@@ -39,11 +54,51 @@ export default function Courses({ user }) {
 
   const completedSet = new Set(user?.completed_courses || []);
 
+  // Domain stats
+  const domainStats = {};
+  courses.forEach(c => {
+    if (!domainStats[c.domain]) domainStats[c.domain] = { total: 0, completed: 0 };
+    domainStats[c.domain].total++;
+    if (completedSet.has(c.name)) domainStats[c.domain].completed++;
+  });
+
+  async function markCourseProgress(courseName, status) {
+    if (!user?.id) return;
+    try {
+      await api.updateProgress({
+        user_id: user.id,
+        course_name: courseName,
+        status: status,
+        progress_percent: status === 'completed' ? 100 : 50,
+      });
+    } catch (err) {
+      console.error('Failed to update progress:', err);
+    }
+  }
+
   return (
     <div className="courses-page animate-fade-in">
       <div className="page-header">
         <h2>Course Catalog</h2>
         <p>Explore {courses.length} courses across {domains.length} skill domains.</p>
+      </div>
+
+      {/* Domain Category Cards */}
+      <div className="domain-category-cards stagger">
+        {domains.slice(0, 8).map(d => (
+          <button
+            key={d}
+            className={`domain-cat-card ${filter.domain === d ? 'active' : ''}`}
+            onClick={() => setFilter({ ...filter, domain: filter.domain === d ? '' : d })}
+          >
+            <span className="domain-cat-icon">{DOMAIN_ICONS[d] || '📦'}</span>
+            <span className="domain-cat-name">{d}</span>
+            <span className="domain-cat-count">{domainStats[d]?.total || 0}</span>
+            {domainStats[d]?.completed > 0 && (
+              <span className="domain-cat-completed">✓{domainStats[d].completed}</span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
@@ -103,7 +158,7 @@ export default function Courses({ user }) {
               <div className="course-card-header">
                 <h4>{course.name}</h4>
                 {completedSet.has(course.name) && (
-                  <span className="course-done-badge">&#10003;</span>
+                  <span className="course-done-badge">✓</span>
                 )}
               </div>
               <div className="course-card-meta">
@@ -141,6 +196,22 @@ export default function Courses({ user }) {
                       ))}
                     </div>
                   </div>
+                  {!completedSet.has(course.name) && user?.id && (
+                    <div className="course-actions-bar">
+                      <button
+                        className="btn btn-sm btn-ghost"
+                        onClick={(e) => { e.stopPropagation(); markCourseProgress(course.name, 'in_progress'); }}
+                      >
+                        Start Learning
+                      </button>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={(e) => { e.stopPropagation(); markCourseProgress(course.name, 'completed'); }}
+                      >
+                        Mark Complete
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
