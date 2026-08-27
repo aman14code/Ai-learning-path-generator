@@ -32,7 +32,7 @@ async def lifespan(application):
     yield
 
 
-app = FastAPI(title="PathFinder API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="PathFinder API", version="2.0.0", lifespan=lifespan)
 
 # CORS for frontend
 app.add_middleware(
@@ -42,9 +42,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
 
 
 # ---- Models ----
@@ -91,6 +88,20 @@ class ProgressUpdate(BaseModel):
     course_name: str
     status: str  # not_started, in_progress, completed
     progress_percent: Optional[int] = 0
+
+
+class SkillGapRequest(BaseModel):
+    user_id: Optional[str] = None
+    target_role: str
+    completed_courses: Optional[list] = []
+
+
+class FeedbackRequest(BaseModel):
+    user_id: str
+    course_name: str
+    difficulty_rating: Optional[int] = 0
+    relevance_rating: Optional[int] = 0
+    comment: Optional[str] = ""
 
 
 # ---- Profile Endpoints ----
@@ -279,13 +290,23 @@ async def get_course(course_name: str):
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     """Chat with the AI learning assistant."""
-    # Save user message
+    # Build user context for personalized responses
+    user_context = None
     if req.user_id:
+        user = db.get_user(req.user_id)
+        if user:
+            user_context = {
+                "name": user.get("name", ""),
+                "goals": user.get("goals", ""),
+                "experience_level": user.get("experience_level", "beginner"),
+                "interests": user.get("interests", []),
+                "completed_courses": user.get("completed_courses", []),
+            }
         db.add_chat_message(req.user_id, "user", req.message)
 
     # Get AI response
     try:
-        response = ml_engine.answer_question(req.message)
+        response = ml_engine.answer_question(req.message, user_context=user_context)
     except Exception:
         response = {
             "type": "fallback",
@@ -351,6 +372,135 @@ async def get_progress(user_id: str):
     }
 
 
+# ---- Skill Gap Analysis Endpoints ----
+@app.post("/api/skill-gap")
+async def analyze_skill_gaps(req: SkillGapRequest):
+    """Analyze skill gaps for a target role."""
+    completed = req.completed_courses or []
+
+    if req.user_id:
+        user = db.get_user(req.user_id)
+        if user:
+            completed = user.get("completed_courses", [])
+
+    try:
+        analysis = ml_engine.analyze_skill_gaps(
+            completed_courses=completed,
+            target_role=req.target_role,
+            course_graph=COURSE_GRAPH,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Skill gap analysis failed: {str(e)}")
+
+    return analysis
+
+
+# ---- Analytics Endpoints ----
+@app.get("/api/analytics/{user_id}")
+async def get_analytics(user_id: str):
+    """Get comprehensive learning analytics for a user."""
+    user = db.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    progress = db.get_progress(user_id)
+    analytics = db.get_learning_analytics(user_id)
+
+    # Learning velocity
+    velocity = ml_engine.get_learning_velocity(progress, analytics)
+
+    # Skill gap for user's goal
+    skill_gap = None
+    if user.get("goals"):
+        try:
+            skill_gap = ml_engine.analyze_skill_gaps(
+                completed_courses=user.get("completed_courses", []),
+                target_role=user["goals"],
+                course_graph=COURSE_GRAPH,
+            )
+        except Exception:
+            pass
+
+    return {
+        "velocity": velocity,
+        "skill_gap": skill_gap,
+        "analytics": analytics,
+        "total_courses_available": len(COURSE_GRAPH),
+    }
+
+
+# ---- Feedback Endpoints ----
+@app.post("/api/feedback")
+async def submit_feedback(req: FeedbackRequest):
+    """Submit course feedback for adaptive learning."""
+    db.add_feedback(
+        user_id=req.user_id,
+        course_name=req.course_name,
+        difficulty_rating=req.difficulty_rating,
+        relevance_rating=req.relevance_rating,
+        comment=req.comment,
+    )
+    return {"message": "Feedback recorded", "course": req.course_name}
+
+
+@app.get("/api/feedback/{user_id}")
+async def get_user_feedback(user_id: str):
+    """Get all feedback from a user."""
+    feedback = db.get_feedback(user_id)
+    return {"feedback": feedback}
+
+
+# ---- Knowledge Graph Endpoint ----
+@app.get("/api/graph")
+async def get_knowledge_graph():
+    """Get the course knowledge graph as nodes and edges for visualization."""
+    nodes = []
+    edges = []
+
+    domain_colors = {
+        "Python": "#3776AB",
+        "Web Development": "#F7DF1E",
+        "Data Science": "#FF6384",
+        "Machine Learning": "#9966FF",
+        "Database": "#36A2EB",
+        "Cloud & DevOps": "#FF9F40",
+        "Mobile Development": "#4BC0C0",
+        "Security": "#FF6384",
+        "Programming": "#FFCE56",
+        "Data Engineering": "#C9CBCF",
+        "Mathematics": "#7C4DFF",
+        "Emerging Tech": "#00BCD4",
+    }
+
+    for name, info in COURSE_GRAPH.items():
+        domain = info.get("domain", "General")
+        difficulty = info.get("difficulty", 2)
+        nodes.append({
+            "id": name,
+            "label": name,
+            "domain": domain,
+            "difficulty": difficulty,
+            "color": domain_colors.get(domain, "#94a3b8"),
+            "size": 8 + difficulty * 4,
+            "duration_hours": info.get("duration_hours", 20),
+            "skills": info.get("skills", []),
+            "description": info.get("description", ""),
+        })
+
+        for prereq in info.get("prerequisites", []):
+            edges.append({
+                "source": prereq,
+                "target": name,
+            })
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "domains": list(domain_colors.keys()),
+        "domain_colors": domain_colors,
+    }
+
+
 # ---- Health ----
 @app.get("/api/health")
 async def health():
@@ -358,6 +508,7 @@ async def health():
         "status": "ok",
         "ml_engine_loaded": ml_engine._loaded,
         "total_courses": len(COURSE_GRAPH),
+        "version": "2.0.0",
     }
 
 
