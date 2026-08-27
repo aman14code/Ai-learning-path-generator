@@ -47,6 +47,19 @@ export const api = {
   updateProgress: (data) => request('/progress', { method: 'POST', body: data }),
   getProgress: (userId) => request(`/progress/${userId}`),
 
+  // Skill Gap Analysis
+  analyzeSkillGap: (data) => request('/skill-gap', { method: 'POST', body: data }),
+
+  // Analytics
+  getAnalytics: (userId) => request(`/analytics/${userId}`),
+
+  // Feedback
+  submitFeedback: (data) => request('/feedback', { method: 'POST', body: data }),
+  getFeedback: (userId) => request(`/feedback/${userId}`),
+
+  // Knowledge Graph
+  getGraph: () => request('/graph'),
+
   // Health
   health: () => request('/health'),
 };
