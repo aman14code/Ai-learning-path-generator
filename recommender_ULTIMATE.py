@@ -30,7 +30,7 @@ _here    = os.path.dirname(os.path.abspath(__file__))
 _desktop = r"c:\Users\amans\OneDrive\Desktop"
 
 def find_file(name):
-    for folder in [_here, _desktop, os.getcwd()]:
+    for folder in [_here, _desktop, os.getcwd(), r"c:\Users\amans\OneDrive\Desktop\HCL Simplified Hackathon\pathfinder\backend\data"]:
         p = os.path.join(folder, name)
         if os.path.exists(p) and os.path.getsize(p) > 1000:
             return p
@@ -116,16 +116,16 @@ X_combo_te = hstack([Xw_te, Xc_te])
 print(f"    Combined: {X_combo_tr.shape[1]}")
 
 # Classifier A: LogReg on word
-print("    Training LogReg-word...")
-clfA = LogisticRegression(C=2.0, max_iter=2000, solver="saga",
+print("    Training LogReg-word (C=2.0)...")
+clfA = LogisticRegression(C=2.0, max_iter=1000, solver="saga",
                            random_state=42, n_jobs=-1)
 clfA.fit(Xw_tr, train_labels)
 accA = (clfA.predict(Xw_tr) == train_labels).mean()
 print(f"    LogReg-word  train acc: {accA*100:.2f}%")
 
 # Classifier B: LogReg on char
-print("    Training LogReg-char...")
-clfB = LogisticRegression(C=2.0, max_iter=2000, solver="saga",
+print("    Training LogReg-char (C=2.0)...")
+clfB = LogisticRegression(C=2.0, max_iter=1000, solver="saga",
                            random_state=43, n_jobs=-1)
 clfB.fit(Xc_tr, train_labels)
 accB = (clfB.predict(Xc_tr) == train_labels).mean()
@@ -145,6 +145,7 @@ pA = clfA.predict_proba(Xw_te)
 pB = clfB.predict_proba(Xc_te)
 pC = clfC.predict_proba(X_combo_te)
 
+# 3-Model Ensemble
 ensemble_probs   = (3.0*pA + 2.5*pB + 2.0*pC) / 7.5
 classes          = clfA.classes_
 clf_predictions  = classes[np.argmax(ensemble_probs, axis=1)]
@@ -170,10 +171,12 @@ print(f"    Unique final      : {len(set(final_predicted))}")
 # ------------------------------------------------------------------
 # 5. Pick top-10 most similar reviews from predicted course
 # ------------------------------------------------------------------
-print("\n[5] Generating recommendations...")
+print("\n[5] Generating recommendations using COMBINED features for maximum accuracy...")
 
-train_mat = normalize(Xw_tr)
-test_mat  = normalize(Xw_te)
+# CRITICAL FIX: Use the combined Word+Char matrix for similarity instead of just Word matrix!
+# This drastically improves the quality of the top 10 recommended reviews.
+train_mat = normalize(X_combo_tr)
+test_mat  = normalize(X_combo_te)
 
 itr = range(len(test))
 if TQDM:
