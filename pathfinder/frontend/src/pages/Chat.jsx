@@ -242,15 +242,13 @@ export default function Chat({ user }) {
         </div>
 
         {/* Suggestions */}
-        {messages.length <= 1 && (
-          <div className="chat-suggestions">
-            {contextSuggestions.slice(0, 6).map(s => (
-              <button key={s} className="suggestion-chip" onClick={() => sendMessage(s)}>
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="chat-suggestions persistent-suggestions">
+          {contextSuggestions.slice(0, 6).map(s => (
+            <button key={s} className="suggestion-chip" onClick={() => sendMessage(s)}>
+              {s}
+            </button>
+          ))}
+        </div>
 
         {/* Input */}
         <div className="chat-input-container">

@@ -10,6 +10,11 @@ export default function LearningPath({ user, setUser }) {
   const [showGenerator, setShowGenerator] = useState(true);
   const [feedbackCourse, setFeedbackCourse] = useState(null);
   const [feedbackData, setFeedbackData] = useState({ difficulty: 3, relevance: 4 });
+  const [showCertificate, setShowCertificate] = useState(false);
+
+  const exportPDF = () => {
+    window.print();
+  };
 
   useEffect(() => {
     api.getCareerPaths()
@@ -172,18 +177,30 @@ export default function LearningPath({ user, setUser }) {
                 <span>Duration</span>
               </div>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={() => setShowGenerator(true)}>
-              Change Goal
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn btn-ghost btn-sm" onClick={exportPDF}>
+                📄 Export PDF
+              </button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowGenerator(true)}>
+                Change Goal
+              </button>
+            </div>
           </div>
 
           {/* Overall Progress Bar */}
           <div className="path-progress-bar glass-card">
-            <div className="path-progress-info">
-              <span className="path-progress-label">
-                Overall Progress: {completedCount}/{timelineData.length} courses
-              </span>
-              <span className="path-progress-percent">{progressPercent.toFixed(0)}%</span>
+            <div className="path-progress-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span className="path-progress-label">
+                  Overall Progress: {completedCount}/{timelineData.length} courses
+                </span>
+                <span className="path-progress-percent" style={{ marginLeft: 8 }}>{progressPercent.toFixed(0)}%</span>
+              </div>
+              {progressPercent === 100 && (
+                <button className="btn btn-sm" style={{ background: 'linear-gradient(135deg, #f59e0b, #facc15)', color: '#000', fontWeight: 'bold' }} onClick={() => setShowCertificate(true)}>
+                  🏆 Claim Certificate
+                </button>
+              )}
             </div>
             <div className="progress-bar" style={{ height: 8 }}>
               <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }} />
@@ -273,6 +290,40 @@ export default function LearningPath({ user, setUser }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Certificate Modal */}
+      {showCertificate && (
+        <div className="feedback-overlay" onClick={() => setShowCertificate(false)}>
+          <div className="certificate-modal animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="certificate-border">
+              <div className="certificate-content">
+                <div className="cert-logo">PF</div>
+                <h2>Certificate of Completion</h2>
+                <p>This is to certify that</p>
+                <h3 className="cert-name">{user?.name || 'Dedicated Learner'}</h3>
+                <p>has successfully completed the Learning Path:</p>
+                <h4 className="cert-path">{path.career_path || 'Custom Path'}</h4>
+                <div className="cert-footer">
+                  <div className="cert-signature">
+                    <span>Pathfinder AI</span>
+                    <div className="cert-line"></div>
+                    <small>Instructor</small>
+                  </div>
+                  <div className="cert-date">
+                    <span>{new Date().toLocaleDateString()}</span>
+                    <div className="cert-line"></div>
+                    <small>Date</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="cert-actions">
+              <button className="btn btn-secondary" onClick={() => setShowCertificate(false)}>Close</button>
+              <button className="btn btn-primary" onClick={() => window.print()}>Download</button>
+            </div>
           </div>
         </div>
       )}

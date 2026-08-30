@@ -412,3 +412,122 @@
   .milestones { padding-left: 24px; }
   .milestone-badge { left: -32px; width: 24px; height: 24px; }
 }
+
+/* ---- Certificate Modal ---- */
+.certificate-modal {
+  background: var(--bg);
+  padding: 24px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.certificate-border {
+  padding: 8px;
+  background: linear-gradient(135deg, #f59e0b, #facc15, #6366f1);
+  border-radius: 12px;
+}
+
+.certificate-content {
+  background: var(--surface);
+  padding: 40px;
+  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+}
+
+.cert-logo {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--accent-primary);
+  margin-bottom: 16px;
+}
+
+.certificate-content h2 {
+  font-family: serif;
+  font-size: 2.5rem;
+  margin-bottom: 24px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.certificate-content p {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.cert-name {
+  font-family: 'Brush Script MT', cursive, serif;
+  font-size: 3rem;
+  color: #f59e0b;
+  margin-bottom: 24px;
+}
+
+.cert-path {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 40px;
+}
+
+.cert-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.cert-signature, .cert-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+}
+
+.cert-signature span {
+  font-family: 'Brush Script MT', cursive, serif;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.cert-date span {
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.cert-line {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 4px 0;
+}
+
+.cert-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .certificate-modal, .certificate-modal * {
+    visibility: visible;
+  }
+  .certificate-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cert-actions {
+    display: none;
+  }
+}

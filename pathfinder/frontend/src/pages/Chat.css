@@ -319,3 +319,20 @@
   flex-shrink: 0;
   min-width: 44px;
 }
+
+.persistent-suggestions {
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  padding-bottom: 8px !important;
+  -webkit-overflow-scrolling: touch;
+}
+.persistent-suggestions::-webkit-scrollbar {
+  height: 4px;
+}
+.persistent-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.suggestion-chip {
+  flex-shrink: 0;
+}

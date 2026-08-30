@@ -418,6 +418,41 @@ export default function Dashboard({ user }) {
             </button>
           </div>
 
+          {/* Gamification / Badges */}
+          <div style={{ marginTop: 24 }}>
+            <h3 style={{ marginBottom: 16 }}>Your Badges</h3>
+            <div className="badges-grid stagger">
+              <div className={`badge-card ${stats.completed >= 1 ? 'unlocked' : 'locked'}`} title={stats.completed >= 1 ? "Earned by completing your first course!" : "Complete 1 course to unlock"}>
+                <div className="badge-icon">{stats.completed >= 1 ? '🌟' : '🔒'}</div>
+                <div className="badge-info">
+                  <h5>First Steps</h5>
+                  <p>1st Course</p>
+                </div>
+              </div>
+              <div className={`badge-card ${stats.completed >= 3 ? 'unlocked' : 'locked'}`} title={stats.completed >= 3 ? "Earned by completing 3 courses!" : "Complete 3 courses to unlock"}>
+                <div className="badge-icon">{stats.completed >= 3 ? '🔥' : '🔒'}</div>
+                <div className="badge-info">
+                  <h5>On Fire</h5>
+                  <p>3 Courses</p>
+                </div>
+              </div>
+              <div className={`badge-card ${stats.total_hours >= 10 ? 'unlocked' : 'locked'}`} title={stats.total_hours >= 10 ? "Earned by dedicating 10+ hours to learning!" : "Learn for 10 hours to unlock"}>
+                <div className="badge-icon">{stats.total_hours >= 10 ? '⏳' : '🔒'}</div>
+                <div className="badge-info">
+                  <h5>Dedicated</h5>
+                  <p>10+ Hours</p>
+                </div>
+              </div>
+              <div className={`badge-card ${domains.length >= 3 ? 'unlocked' : 'locked'}`} title={domains.length >= 3 ? "Earned by learning in 3+ different domains!" : "Learn 3+ domains to unlock"}>
+                <div className="badge-icon">{domains.length >= 3 ? '🧠' : '🔒'}</div>
+                <div className="badge-info">
+                  <h5>Polymath</h5>
+                  <p>3+ Domains</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Skill Domains */}
           {domains.length > 0 && (
             <div style={{ marginTop: 24 }}>
