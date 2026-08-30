@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Hardcoded Render URL for hackathon deployment
+const API_BASE = import.meta.env.VITE_API_URL || 'https://pathfinder-backend-wnvm.onrender.com/api';
 
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
