@@ -14,7 +14,7 @@ import './index.css';
 const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
 
-function Sidebar({ user }) {
+function Sidebar({ user, onLogout }) {
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : '?';
 
   return (
@@ -50,16 +50,44 @@ function Sidebar({ user }) {
             <div className="sidebar-user-level">{user?.experience_level || 'beginner'}</div>
           </div>
         </div>
+        <button 
+          onClick={onLogout}
+          style={{
+            marginTop: '16px', 
+            width: '100%', 
+            padding: '10px', 
+            background: 'rgba(255, 68, 68, 0.1)', 
+            border: '1px solid rgba(255, 68, 68, 0.2)', 
+            color: '#ff6b6b', 
+            borderRadius: '10px', 
+            cursor: 'pointer', 
+            fontWeight: '600',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 68, 68, 0.2)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 68, 68, 0.1)'}
+        >
+          <span>🚪</span> Logout
+        </button>
       </div>
     </aside>
   );
 }
 
 function AppLayout({ user, setUser }) {
+  const handleLogout = () => {
+    localStorage.removeItem('pathfinder_user_id');
+    setUser(null);
+  };
+
   return (
     <div className="app-layout">
       <div className="bg-mesh" />
-      <Sidebar user={user} />
+      <Sidebar user={user} onLogout={handleLogout} />
       <main className="app-main">
         <div className="app-content">
           <Routes>
