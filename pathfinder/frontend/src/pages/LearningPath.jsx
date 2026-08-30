@@ -270,6 +270,18 @@ export default function LearningPath({ user, setUser }) {
                           </div>
                         </div>
                         <div className="path-course-actions">
+                          {courseInfo.video_url && (
+                            <a 
+                              href={courseInfo.video_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="btn btn-sm"
+                              style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                              title="Watch related tutorials on YouTube"
+                            >
+                              ▶ Watch
+                            </a>
+                          )}
                           {!isCompleted && (
                             <>
                               <button className="btn btn-sm btn-ghost" onClick={() => markCourse(courseName, 'in_progress')}>
