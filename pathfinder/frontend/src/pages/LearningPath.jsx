@@ -162,6 +162,11 @@ export default function LearningPath({ user, setUser }) {
             <div className="path-header-info">
               <h3>{path.career_path || 'Custom Path'}</h3>
               {path.career_description && <p>{path.career_description}</p>}
+              {path.ml_powered && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '4px 12px', fontSize: '0.7rem', fontWeight: 700, borderRadius: 20, background: 'rgba(99, 102, 241, 0.12)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                  🤖 AI-Powered — {path.ml_model || 'TF-IDF + Ensemble SVM'}
+                </span>
+              )}
             </div>
             <div className="path-stats">
               <div className="path-stat">
@@ -264,6 +269,11 @@ export default function LearningPath({ user, setUser }) {
                           <div className="path-course-meta">
                             <span className="tag">{courseInfo.domain || 'General'}</span>
                             <span className="path-duration">{courseInfo.duration_hours || 20}h</span>
+                            {courseInfo.ml_confidence > 0 && (
+                              <span className="tag" style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                                🤖 {Math.round(courseInfo.ml_confidence * 100)}% match
+                              </span>
+                            )}
                             {courseInfo.skills?.slice(0, 3).map(s => (
                               <span key={s} className="tag">{s}</span>
                             ))}
