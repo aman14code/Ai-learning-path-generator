@@ -1,109 +1,112 @@
-# PathFinder 🚀
-**AI-Powered Personalized Learning Path Recommender**
+# 🧭 PathFinder — AI-Powered Personalized Learning Path Recommender
 
-PathFinder is an intelligent learning companion built for the **HCLTech AMPlified Hackathon**. It analyzes 110,000+ course reviews across 80+ courses to generate highly personalized, structured learning roadmaps that adapt to user goals, current skills, and feedback.
+An intelligent learning assistant that recommends personalized learning paths based on a learner's interests, goals, previous learning history and skill level.
 
-## ✨ Key Features & Innovation
+## 🚀 Live Demo
 
-1. **🧠 ML-Powered Skill Gap Analysis**
-   - Automatically calculates your current proficiency across 12 tech domains.
-   - Compares your skills against target role requirements (e.g., Data Scientist, DevOps Engineer).
-   - Visualizes your readiness with a beautiful, custom **Canvas-based Skill Radar Chart**.
-   - Prescribes the exact courses needed to close your highest-priority skill gaps.
+- **Frontend:** [https://ai-learning-path-generator-five.vercel.app](https://ai-learning-path-generator-five.vercel.app)
+- **Backend API:** Deployed on Render
 
-2. **🗺️ Interactive Knowledge Graph**
-   - Pure JS/Canvas implementation of a force-directed graph.
-   - Visually explore course dependencies and prerequisites.
-   - Highlights connected learning paths when you click on a course.
-   - Shows completed courses with a glowing green aura.
+## 🏗️ Architecture
 
-3. **🤖 Conversational AI Assistant**
-   - Natural language interface for course recommendations and career advice.
-   - Features streaming text responses and rich inline course suggestion cards.
-   - Context-aware: the AI knows your goals and completed courses.
-
-4. **🔄 Adaptive Feedback Loop**
-   - After completing a course, rate its difficulty and relevance.
-   - The system tracks your "Learning Velocity" (courses per week, active streaks) and adapts pacing.
-   - True adaptive learning that evolves with the user.
-
-5. **📈 Visual Learning Roadmaps**
-   - Translates abstract goals into concrete, milestone-driven paths.
-   - Uses DAG topological sorting to ensure prerequisites are satisfied in the correct order.
-   - Visual timeline and overall progress tracking.
-
-## 🏗️ Technical Architecture
-
-```mermaid
-graph TB
-    subgraph "Frontend (React + Vite)"
-        A[Landing Page] --> B[Onboarding Wizard]
-        B --> C[Dashboard (Skill Radar)]
-        C --> E[Learning Path]
-        C --> F[AI Chat Assistant]
-        C --> G[Course Catalog]
-        C --> H[Knowledge Graph]
-    end
-    
-    subgraph "Backend (FastAPI)"
-        I[REST API] --> J[ML Recommendation Engine]
-        I --> K[Skill Gap Analyzer]
-        I --> L[Learning Path Generator]
-        I --> M[Knowledge Graph Builder]
-    end
-    
-    subgraph "AI/ML Pipeline"
-        J --> O[TF-IDF Vectorizer]
-        J --> P[Cosine Similarity]
-        K --> Q[Skill Taxonomy Mapping]
-        L --> R[DAG Topological Sort]
-    end
-    
-    subgraph "Data Layer"
-        T[(SQLite DB)] --> I
-        U[110K+ Course Reviews] --> O
-    end
+```
+pathfinder/
+├── frontend/          # React + Vite (deployed on Vercel)
+│   ├── src/
+│   │   ├── pages/     # Dashboard, Chat, LearningPath, Courses, SkillGraph, Leaderboard
+│   │   ├── api.js     # API client
+│   │   └── App.jsx    # Main app with routing
+│   └── package.json
+├── backend/           # FastAPI + Python (deployed on Render)
+│   ├── app.py         # REST API endpoints
+│   ├── ml_engine.py   # TF-IDF + Ensemble SVM recommendation engine
+│   ├── learning_paths.py  # Course graph + career path generator
+│   ├── database.py    # User profiles, progress tracking
+│   ├── train_and_save_model.py  # ML model training script
+│   └── data/
+│       ├── train.csv          # Training dataset (course reviews)
+│       └── ultimate_model.pkl # Trained ensemble model
+└── README.md
 ```
 
-## 🛠️ Tech Stack
+## 🤖 AI/ML Techniques
 
-- **Frontend**: React, Vite, CSS3 (Glassmorphism, CSS Variables, Custom Animations), HTML5 Canvas API (for Radar Chart and Knowledge Graph)
-- **Backend**: Python, FastAPI, Uvicorn
-- **AI/ML**: scikit-learn (TF-IDF, Cosine Similarity), NumPy, Pandas
-- **Database**: SQLite (User profiles, progress tracking, learning analytics, feedback)
+### Ensemble Model Architecture
+- **TF-IDF Vectorizer (Word-level):** 80,000 features, (1,3)-gram, sublinear TF
+- **TF-IDF Vectorizer (Char-level):** 60,000 features, (3,6)-gram char_wb
+- **LogisticRegression (Word):** C=2.0, trained on word-level features
+- **LogisticRegression (Char):** C=2.0, trained on char-level features
+- **LinearSVC (Combo):** Calibrated SVM on concatenated word+char features
+- **Ensemble Fusion:** Weighted probability averaging (3.0×LR_word + 2.5×LR_char + 2.0×SVC) / 7.5
 
-## 🚀 Setup & Installation
+### Additional AI Components
+- **Skill Gap Analysis:** Weighted proficiency scoring per domain with role-based requirements
+- **Knowledge Graph:** Prerequisite-based course graph with topological ordering
+- **Learning Velocity:** Adaptive pacing based on completion patterns
+- **Explainable AI:** Each recommendation includes a human-readable explanation
+
+## 🏛️ Architecture & ML Design Decisions (For Judges)
+
+### Why Ensemble SVM instead of Generative LLMs?
+While Large Language Models (LLMs) are popular, we deliberately chose an **Ensemble TF-IDF + SVM** architecture for the core recommendation engine because:
+1. **Deterministic Accuracy:** Our model consistently maps specific user keywords to exact course profiles without the hallucination risks of generative models.
+2. **Latency & Performance:** Our ensemble runs locally in milliseconds, avoiding the 2-5 second network latency of third-party LLM APIs.
+3. **Cost Efficiency:** It requires zero API credits to run at scale, making this a truly self-contained, production-ready solution.
+
+### Future Scaling to Microservices
+Currently built as a monolithic FastAPI application for rapid hackathon iteration, the architecture is designed to be easily decoupled into microservices:
+- **Auth & Profile Service** (Node.js/Express)
+- **Recommendation Engine Service** (Python/FastAPI - containing the ML model)
+- **Progress Tracking & Analytics Service** (Go/Rust for high throughput)
+This separation of concerns will allow the heavy ML processes to scale independently from web traffic.
+
+## ✨ Key Features
+
+1. **Conversational AI Assistant** — Natural language interface with streaming responses
+2. **Personalized Learning Paths** — ML-powered roadmaps with milestones and prerequisites
+3. **Skill Gap Analysis** — Identify weaknesses against target career requirements
+4. **Interactive Knowledge Graph** — Force-directed visualization of course relationships
+5. **Voice Input** — Web Speech API integration for hands-free interaction
+6. **GitHub-Style Activity Heatmap** — Visual consistency tracking
+7. **Global Leaderboard** — Gamified learning with badges and rankings
+8. **Adaptive Feedback System** — Difficulty and relevance ratings per course
+9. **Certificate of Completion** — Generated upon finishing a learning path
+10. **Progress Dashboard** — Real-time stats, skill distribution, learning velocity
+
+## 🛠️ Setup & Execution
 
 ### Prerequisites
-- Node.js (v18+)
 - Python 3.10+
+- Node.js 18+
+- pip
 
-### 1. Backend Setup
-
+### Backend Setup
 ```bash
-cd backend
+cd pathfinder/backend
 pip install -r requirements.txt
-python app.py
+python train_and_save_model.py    # Train the ML model
+python -m uvicorn app:app --host 0.0.0.0 --port 8000
 ```
-*The backend server will run on http://localhost:8000.*
-*Note: The ML engine pre-computes TF-IDF vectors on startup. This takes ~3 seconds.*
 
-### 2. Frontend Setup
-
+### Frontend Setup
 ```bash
-cd frontend
+cd pathfinder/frontend
 npm install
 npm run dev
 ```
-*The frontend will run on http://localhost:5173.*
 
-## 📊 Judging Criteria Alignment
+The frontend runs on `http://localhost:5173` and the backend on `http://localhost:8000`.
 
-- **Problem Understanding (20%)**: The Skill Gap Analysis engine demonstrates deep understanding by diagnosing *why* a user needs a course, rather than just recommending one blindly.
-- **Functionality (25%)**: Complete end-to-end flow from onboarding to personalized paths, chat, progress tracking, and feedback.
-- **AI/ML Implementation (20%)**: Efficient TF-IDF + Cosine Similarity pipeline, coupled with heuristic-based skill taxonomy mapping and DAG topological sorting for curriculum generation.
-- **Innovation (15%)**: Interactive Canvas-based Knowledge Graph and Skill Radar charts provide a massive wow-factor and unique visual insight into learning.
-- **User Experience (10%)**: Premium dark mode UI with glassmorphism, 3D hover effects, micro-animations, and a highly responsive layout.
+## 📊 Tech Stack
 
----
-*Built with ❤️ for the HCLTech AMPlified Hackathon.*
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite, React Router, React Force Graph |
+| Backend | FastAPI, Uvicorn, Python |
+| ML/AI | scikit-learn, TF-IDF, SVM, Logistic Regression |
+| Data | pandas, numpy, scipy |
+| Deployment | Vercel (frontend), Render (backend) |
+
+## 👥 Team
+
+Built for HCL Simplified Hackathon 2026

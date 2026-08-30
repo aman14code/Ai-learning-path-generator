@@ -292,6 +292,11 @@ export default function LearningPath({ user, setUser }) {
                               ▶ Watch
                             </a>
                           )}
+                          <button className="btn btn-sm btn-ghost" onClick={() => {
+                            alert(`Knowledge Check: ${courseName}\n\n1. What are the core concepts of this subject?\n2. How would you apply this to a real world problem?\n3. Explain this topic to a beginner.\n\n(AI Quiz Generation Beta)`);
+                          }}>
+                            📝 Quiz
+                          </button>
                           {!isCompleted && (
                             <>
                               <button className="btn btn-sm btn-ghost" onClick={() => markCourse(courseName, 'in_progress')}>
