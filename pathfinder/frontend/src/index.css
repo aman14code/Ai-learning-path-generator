@@ -712,3 +712,31 @@ select.input {
 .tooltip:hover::after {
   opacity: 1;
 }
+
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background-color: #0a0e1a !important;
+    color: #f1f5f9 !important;
+  }
+
+  .glass-card {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Ensure timeline lines print clearly */
+  .timeline-line {
+    background: #64748b !important;
+  }
+  
+  .timeline-node.completed .timeline-line {
+    background: #10b981 !important;
+  }
+}
