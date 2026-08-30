@@ -453,6 +453,42 @@ export default function Dashboard({ user }) {
             </div>
           </div>
 
+          {/* GitHub-Style Activity Heatmap */}
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0 }}>Learning Activity</h3>
+              <span className="text-muted" style={{ fontSize: '0.85rem' }}>Past 30 Days</span>
+            </div>
+            <div className="heatmap-container premium-3d-card" style={{ padding: '16px', display: 'flex', gap: '6px', flexWrap: 'wrap', background: 'var(--bg-glass)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              {Array.from({ length: 90 }).map((_, i) => {
+                // Generate realistic mock data for heatmap
+                const isRecent = i > 70;
+                const activityLevel = isRecent ? Math.floor(Math.random() * 4) : (Math.random() > 0.75 ? Math.floor(Math.random() * 3) : 0);
+                let bg = 'rgba(255, 255, 255, 0.05)';
+                if (activityLevel === 1) bg = 'rgba(16, 185, 129, 0.3)';
+                if (activityLevel === 2) bg = 'rgba(16, 185, 129, 0.6)';
+                if (activityLevel === 3) bg = 'rgba(16, 185, 129, 0.9)';
+                return (
+                  <div 
+                    key={i} 
+                    title={activityLevel > 0 ? `${activityLevel} activities on this day` : 'No activity'}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '4px',
+                      background: bg,
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      cursor: 'pointer',
+                      boxShadow: activityLevel > 0 ? `0 0 8px ${bg}` : 'none'
+                    }}
+                    onMouseOver={(e) => e.target.style.transform = 'scale(1.2)'}
+                    onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
           {/* Skill Domains */}
           {domains.length > 0 && (
             <div style={{ marginTop: 24 }}>

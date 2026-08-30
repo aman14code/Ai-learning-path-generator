@@ -56,6 +56,7 @@ function renderContent(content) {
 
 export default function Chat({ user }) {
   const navigate = useNavigate();
+  const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -66,6 +67,29 @@ export default function Chat({ user }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Web Speech API
+  const handleVoiceRecord = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser. Please use Chrome.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+    };
+    recognition.onerror = (e) => console.error(e);
+    recognition.onend = () => setIsListening(false);
+    
+    recognition.start();
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -252,6 +276,19 @@ export default function Chat({ user }) {
 
         {/* Input */}
         <div className="chat-input-container">
+          <button 
+            className={`btn btn-icon ${isListening ? 'listening' : ''}`}
+            onClick={handleVoiceRecord}
+            disabled={loading}
+            title="Use Voice Input"
+            style={{ 
+              background: isListening ? '#ef4444' : 'var(--bg-glass)',
+              border: isListening ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)',
+              animation: isListening ? 'pulse 1.5s infinite' : 'none'
+            }}
+          >
+            🎤
+          </button>
           <input
             className="input chat-input"
             type="text"

@@ -8,6 +8,7 @@ import LearningPath from './pages/LearningPath';
 import Chat from './pages/Chat';
 import Courses from './pages/Courses';
 import SkillGraph from './pages/SkillGraph';
+import Leaderboard from './pages/Leaderboard';
 import './index.css';
 
 // User context
@@ -39,6 +40,9 @@ function Sidebar({ user, onLogout }) {
         </NavLink>
         <NavLink to="/courses" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">📚</span> Courses
+        </NavLink>
+        <NavLink to="/leaderboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <span className="nav-icon">🏆</span> Leaderboard
         </NavLink>
       </nav>
 
@@ -96,6 +100,7 @@ function AppLayout({ user, setUser }) {
             <Route path="/chat" element={<Chat user={user} />} />
             <Route path="/skill-graph" element={<SkillGraph user={user} />} />
             <Route path="/courses" element={<Courses user={user} />} />
+            <Route path="/leaderboard" element={<Leaderboard user={user} />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
