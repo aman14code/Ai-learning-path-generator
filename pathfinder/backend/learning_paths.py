@@ -964,12 +964,22 @@ def _topological_sort(courses, completed):
 
     while remaining and max_iterations > 0:
         max_iterations -= 1
-        for course in list(remaining):
+        candidates = []
+        for course in remaining:
             prereqs = COURSE_GRAPH.get(course, {}).get("prerequisites", [])
             unmet = [p for p in prereqs if p in remaining]
             if not unmet:
-                sorted_list.append(course)
-                remaining.discard(course)
+                candidates.append(course)
+        
+        if not candidates:
+            break
+            
+        # Sort candidates by difficulty so lower level courses are completed first
+        candidates.sort(key=lambda c: COURSE_GRAPH.get(c, {}).get("difficulty", 2))
+        
+        for c in candidates:
+            sorted_list.append(c)
+            remaining.discard(c)
 
     # Add any remaining (circular deps)
     sorted_list.extend(remaining)
