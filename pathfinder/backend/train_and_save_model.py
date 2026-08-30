@@ -42,13 +42,13 @@ def main():
     all_texts = train["clean"].tolist()
     
     # Same settings as recommender_ULTIMATE.py
-    vec_word = TfidfVectorizer(max_features=80000, ngram_range=(1,3),
+    vec_word = TfidfVectorizer(max_features=20000, ngram_range=(1,2),
                                 min_df=1, max_df=0.95, stop_words="english",
                                 sublinear_tf=True, strip_accents="unicode")
     Xw_tr = vec_word.fit_transform(all_texts)
     
-    vec_char = TfidfVectorizer(max_features=60000, analyzer="char_wb",
-                                ngram_range=(3,6), min_df=1, max_df=0.95,
+    vec_char = TfidfVectorizer(max_features=15000, analyzer="char_wb",
+                                ngram_range=(3,5), min_df=1, max_df=0.95,
                                 sublinear_tf=True)
     Xc_tr = vec_char.fit_transform(all_texts)
     
@@ -56,16 +56,16 @@ def main():
     
     print("[3] Training Ensemble Models...")
     print("  -> Training LogReg Word (C=2.0)...")
-    clfA = LogisticRegression(C=2.0, max_iter=500, solver="lbfgs", random_state=42, n_jobs=-1)
+    clfA = LogisticRegression(C=2.0, max_iter=100, solver="liblinear", random_state=42)
     clfA.fit(Xw_tr, train_labels)
     
     print("  -> Training LogReg Char (C=2.0)...")
-    clfB = LogisticRegression(C=2.0, max_iter=500, solver="lbfgs", random_state=43, n_jobs=-1)
+    clfB = LogisticRegression(C=2.0, max_iter=100, solver="liblinear", random_state=43)
     clfB.fit(Xc_tr, train_labels)
     
     print("  -> Training LinearSVC Combo (Calibrated)...")
-    svc = LinearSVC(C=1.0, max_iter=3000, random_state=42, dual=True)
-    clfC = CalibratedClassifierCV(svc, cv=3)
+    svc = LinearSVC(C=1.0, max_iter=500, random_state=42, dual=True)
+    clfC = CalibratedClassifierCV(svc, cv=2)
     clfC.fit(X_combo_tr, train_labels)
     
     print("[4] Saving Models to Disk...")
