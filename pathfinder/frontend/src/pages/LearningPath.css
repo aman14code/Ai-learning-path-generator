@@ -512,10 +512,11 @@
 }
 
 @media print {
-  body * {
+  body:has(.certificate-modal) * {
     visibility: hidden;
   }
-  .certificate-modal, .certificate-modal * {
+  body:has(.certificate-modal) .certificate-modal, 
+  body:has(.certificate-modal) .certificate-modal * {
     visibility: visible;
   }
   .certificate-modal {
