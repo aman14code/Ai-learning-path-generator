@@ -865,18 +865,26 @@ def generate_learning_path(goal, completed_courses=None, experience_level="begin
     goal_lower = goal.lower()
     matched_career = None
     career_keywords = {
-        "data_scientist": ["data scientist", "data science", "analyze data", "analytics"],
-        "web_developer": ["web developer", "full stack", "frontend", "backend", "web app"],
+        "data_scientist": ["data scientist", "data science", "analyze data", "analytics",
+                           "data analyst", "data analysis"],
+        "web_developer": ["web developer", "full stack", "frontend", "backend", "web app",
+                          "mern", "mean", "web development", "react developer",
+                          "node developer", "website"],
         "ml_engineer": ["machine learning engineer", "ml engineer", "deep learning",
-                        "ai engineer"],
-        "devops_engineer": ["devops", "infrastructure", "deployment", "cloud engineer"],
+                        "ai engineer", "machine learning", "neural network", "tensorflow",
+                        "pytorch"],
+        "devops_engineer": ["devops", "infrastructure", "deployment", "cloud engineer",
+                            "ci cd", "docker", "kubernetes", "aws engineer"],
         "mobile_developer": ["mobile developer", "app developer", "android", "ios",
-                              "mobile app"],
-        "data_engineer": ["data engineer", "data pipeline", "etl", "big data"],
+                              "mobile app", "react native", "flutter", "mobile development"],
+        "data_engineer": ["data engineer", "data pipeline", "etl", "big data",
+                          "data warehouse", "spark", "kafka"],
         "ai_specialist": ["ai specialist", "artificial intelligence", "generative ai",
-                          "nlp", "computer vision"],
+                          "nlp", "computer vision", "genai", "gpt", "llm",
+                          "prompt engineering", "ai"],
         "cybersecurity_analyst": ["cybersecurity", "security analyst", "ethical hacking",
-                                   "penetration testing"],
+                                   "penetration testing", "cyber security", "hacking",
+                                   "security"],
     }
 
     for career_key, keywords in career_keywords.items():
@@ -885,25 +893,28 @@ def generate_learning_path(goal, completed_courses=None, experience_level="begin
             break
 
     if matched_career:
+        # ---- CAREER PATH MATCHED ----
+        # Use the EXACT hand-curated sequential order from CAREER_PATHS.
+        # Do NOT run topological sort — the order is already perfect.
         career = CAREER_PATHS[matched_career]
-        path_courses = [c for c in career["courses"] if c not in completed]
+        ordered = [c for c in career["courses"] if c not in completed]
     else:
-        # Use ML engine to find relevant courses
+        # ---- CUSTOM / KEYWORD SEARCH ----
         if ml_engine:
             recs = ml_engine.recommend_for_goal(goal, experience_level, interests)
             path_courses = [r["course"] for r in recs if r["course"] not in completed]
         else:
-            # Fallback: search by keywords
             path_courses = []
             for name, info in COURSE_GRAPH.items():
                 if name in completed:
                     continue
                 name_lower = name.lower()
-                if any(word in name_lower for word in goal_lower.split()):
+                domain_lower = info.get("domain", "").lower()
+                if any(word in name_lower or word in domain_lower for word in goal_lower.split()):
                     path_courses.append(name)
 
-    # Resolve prerequisites and order correctly
-    ordered = _topological_sort(path_courses, completed)
+        # For custom paths, resolve prerequisites and sort
+        ordered = _topological_sort(path_courses, completed)
 
     # Build milestone structure
     milestones = _build_milestones(ordered)
@@ -936,6 +947,7 @@ def generate_learning_path(goal, completed_courses=None, experience_level="begin
             for i, c in enumerate(ordered)
         ],
     }
+
 
 
 def _topological_sort(courses, completed):
